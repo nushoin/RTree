@@ -45,7 +45,7 @@ bool MySearchCallback(int id, void* arg)
 }
 
 
-void main()
+int main()
 {
   RTree<int, int, 2, float> tree;
 
@@ -86,7 +86,7 @@ void main()
     printf("it[%d] %d\n", itIndex++, value);
   }
 
-  getchar(); // Wait for keypress on exit so we can read console output
+  return 0;
 
   // Output:
   //
@@ -103,3 +103,4 @@ void main()
   // it[2] 2
   // it[3] 3
 }
+
