@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <memory.h>
-#include <crtdbg.h>
+#ifdef WIN32
+  #include <crtdbg.h>
+#endif //WIN32
 
 #include "RTree.h"
 
@@ -37,7 +39,7 @@
 //
 static float RandFloat(float a_min, float a_max)
 {
-  const float ooMax = 1.0f / (float)(RAND_MAX+1);
+  const float ooMax = 1.0f / (float)RAND_MAX;
   
   float retValue = ( (float)rand() * ooMax * (a_max - a_min) + a_min);
 
@@ -111,7 +113,7 @@ int SomeThing::s_outstandingAllocs = 0;
 
 
 /// A callback function to obtain query results in this implementation
-bool _cdecl QueryResultCallback(SomeThing* a_data, void* a_context)
+bool QueryResultCallback(SomeThing* a_data, void* a_context)
 {
   printf("search found %d\n", a_data->m_creationCounter);
   
@@ -244,9 +246,6 @@ int main(int argc, char* argv[])
     printf("No memory leaks detected by app\n");
   }
 
-  // Wait for keypress on exit so we can read console output
-  getchar(); 
-
 #ifdef WIN32
   // Use CRT Debug facility to dump memory leaks on app exit
   SET_CRT_DEBUG_FIELD( _CRTDBG_LEAK_CHECK_DF );
@@ -254,3 +253,4 @@ int main(int argc, char* argv[])
 
   return 0;
 }
+
