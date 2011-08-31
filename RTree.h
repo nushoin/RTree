@@ -1498,7 +1498,7 @@ bool RTREE_QUAL::RemoveRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node,
   {
     for(int index = 0; index < a_node->m_count; ++index)
     {
-      if(a_node->m_branch[index].m_child == (Node*)a_id)
+      if(a_node->m_branch[index].m_data == a_id)
       {
         DisconnectBranch(a_node, index); // Must return after this call as count has changed
         return false;
