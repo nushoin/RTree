@@ -887,38 +887,55 @@ bool RTREE_QUAL::InsertRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node,
   ASSERT(a_rect && a_node && a_newNode);
   ASSERT(a_level >= 0 && a_level <= a_node->m_level);
 
-  // Still above level for insertion, go down tree recursively
+  // recurse until we reach the correct level for the new record. data records
+  // will always be called with a_level == 0 (leaf)
   if(a_node->m_level > a_level)
   {
+    // Still above level for insertion, go down tree recursively
     Node* otherNode;
     Branch branch;
 
+    // find the optimal branch for this record
     int index = PickBranch(a_rect, a_node);
+
+    // recursively insert this record into the picked branch
     bool childWasSplit = InsertRectRec(a_rect, a_id, a_node->m_branch[index].m_child, &otherNode, a_level);
 
     if (!childWasSplit)
     {
-      // Child was not split
+      // Child was not split. Merge the bounding box of the new record with the
+      // existing bounding box
       a_node->m_branch[index].m_rect = CombineRect(a_rect, &(a_node->m_branch[index].m_rect));
       return false;
     }
     else
     {
-      // Child was split
+      // Child was split. The old branches are now re-partitioned to two nodes
+      // so we have to re-calculate the bounding boxes of each node
       a_node->m_branch[index].m_rect = NodeCover(a_node->m_branch[index].m_child);
       Branch branch;
       branch.m_child = otherNode;
       branch.m_rect = NodeCover(otherNode);
+
+      // The old node is already a child of a_node. Now add the newly-created
+      // node to a_node as well. a_node might be split because of that.
       return AddBranch(&branch, a_node, a_newNode);
     }
   }
-  else if(a_node->m_level == a_level) // Have reached level for insertion. Add rect, split if necessary
+  else if(a_node->m_level == a_level)
   {
+    // We have reached level for insertion
     Branch branch;
     branch.m_rect = *a_rect;
     branch.m_data = a_id;
-    branch.m_child = NULL;
-    // Child field of leaves contains id of data record
+
+#ifdef _DEBUG
+    if ( 0 == a_level ) {
+      branch.m_child = NULL;
+    }
+#endif
+
+    // Add rect, split if necessary
     return AddBranch(&branch, a_node, a_newNode);
   }
   else
@@ -1118,11 +1135,11 @@ void RTREE_QUAL::SplitNode(Node* a_node, Branch* a_branch, Node** a_newNode)
   // Find partition
   ChoosePartition(parVars, MINNODES);
 
-  // Create a new node to hold half of the branches
+  // Create a new node to hold (about) half of the branches
   *a_newNode = AllocNode();
   (*a_newNode)->m_level = a_node->m_level;
 
-  // Put branches from buffer into 2 nodes according to chosen partition
+  // Put branches from buffer into 2 nodes according to the chosen partition
   a_node->m_count = 0;
   LoadNodes(a_node, *a_newNode, parVars);
   
@@ -1418,7 +1435,6 @@ bool RTREE_QUAL::RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root)
   ASSERT(a_rect && a_root);
   ASSERT(*a_root);
 
-  Node* tempNode;
   ListNode* reInsertList = NULL;
 
   if(!RemoveRectRec(a_rect, a_id, *a_root, &reInsertList))
@@ -1427,10 +1443,11 @@ bool RTREE_QUAL::RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root)
     // Reinsert any branches from eliminated nodes
     while(reInsertList)
     {
-      tempNode = reInsertList->m_node;
+      Node* tempNode = reInsertList->m_node;
 
       for(int index = 0; index < tempNode->m_count; ++index)
       {
+        // TODO go over this code. Check if it does what it is supposed to.
         InsertRect(&(tempNode->m_branch[index].m_rect),
                    tempNode->m_branch[index].m_data,
                    a_root,
@@ -1444,10 +1461,11 @@ bool RTREE_QUAL::RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root)
       FreeListNode(remLNode);
     }
     
-    // Check for redundant root (not leaf, 1 child) and eliminate
+    // Check for redundant root (not leaf, 1 child) and eliminate TODO replace
+    // if with while? In case there is a whole branch of redundant roots...
     if((*a_root)->m_count == 1 && (*a_root)->IsInternalNode())
     {
-      tempNode = (*a_root)->m_branch[0].m_child;
+      Node* tempNode = (*a_root)->m_branch[0].m_child;
       
       ASSERT(tempNode);
       FreeNode(*a_root);
@@ -1552,21 +1570,24 @@ bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, t_resultC
   ASSERT(a_node->m_level >= 0);
   ASSERT(a_rect);
 
-  if(a_node->IsInternalNode()) // This is an internal node in the tree
+  if(a_node->IsInternalNode())
   {
+    // This is an internal node in the tree
     for(int index=0; index < a_node->m_count; ++index)
     {
       if(Overlap(a_rect, &a_node->m_branch[index].m_rect))
       {
         if(!Search(a_node->m_branch[index].m_child, a_rect, a_foundCount, a_resultCallback, a_context))
         {
-          return false; // Don't continue searching
+          // The callback indicated to stop searching
+          return false;
         }
       }
     }
   }
-  else // This is a leaf node
+  else
   {
+    // This is a leaf node
     for(int index=0; index < a_node->m_count; ++index)
     {
       if(Overlap(a_rect, &a_node->m_branch[index].m_rect))
