@@ -332,18 +332,18 @@ protected:
   void FreeNode(Node* a_node);
   void InitNode(Node* a_node);
   void InitRect(Rect* a_rect);
-  bool InsertRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node, Node** a_newNode, int a_level);
-  bool InsertRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root, int a_level);
+  bool InsertRectRec(const Branch& a_branch, Node* a_node, Node** a_newNode, int a_level);
+  bool InsertRect(const Branch& a_branch, Node** a_root, int a_level);
   Rect NodeCover(Node* a_node);
-  bool AddBranch(Branch* a_branch, Node* a_node, Node** a_newNode);
+  bool AddBranch(const Branch* a_branch, Node* a_node, Node** a_newNode);
   void DisconnectBranch(Node* a_node, int a_index);
-  int PickBranch(Rect* a_rect, Node* a_node);
-  Rect CombineRect(Rect* a_rectA, Rect* a_rectB);
-  void SplitNode(Node* a_node, Branch* a_branch, Node** a_newNode);
+  int PickBranch(const Rect* a_rect, Node* a_node);
+  Rect CombineRect(const Rect* a_rectA, const Rect* a_rectB);
+  void SplitNode(Node* a_node, const Branch* a_branch, Node** a_newNode);
   ELEMTYPEREAL RectSphericalVolume(Rect* a_rect);
   ELEMTYPEREAL RectVolume(Rect* a_rect);
   ELEMTYPEREAL CalcRectVolume(Rect* a_rect);
-  void GetBranches(Node* a_node, Branch* a_branch, PartitionVars* a_parVars);
+  void GetBranches(Node* a_node, const Branch* a_branch, PartitionVars* a_parVars);
   void ChoosePartition(PartitionVars* a_parVars, int a_minFill);
   void LoadNodes(Node* a_nodeA, Node* a_nodeB, PartitionVars* a_parVars);
   void InitParVars(PartitionVars* a_parVars, int a_maxRects, int a_minFill);
@@ -491,15 +491,17 @@ void RTREE_QUAL::Insert(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMD
   }
 #endif //_DEBUG
 
-  Rect rect;
+  Branch branch;
+  branch.m_data = a_dataId;
+  branch.m_child = NULL;
   
   for(int axis=0; axis<NUMDIMS; ++axis)
   {
-    rect.m_min[axis] = a_min[axis];
-    rect.m_max[axis] = a_max[axis];
+    branch.m_rect.m_min[axis] = a_min[axis];
+    branch.m_rect.m_max[axis] = a_max[axis];
   }
   
-  InsertRect(&rect, a_dataId, &m_root, 0);
+  InsertRect(branch, &m_root, 0);
 }
 
 
@@ -882,9 +884,9 @@ void RTREE_QUAL::InitRect(Rect* a_rect)
 // The level argument specifies the number of steps up from the leaf
 // level to insert; e.g. a data rectangle goes in at level = 0.
 RTREE_TEMPLATE
-bool RTREE_QUAL::InsertRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node, Node** a_newNode, int a_level)
+bool RTREE_QUAL::InsertRectRec(const Branch& a_branch, Node* a_node, Node** a_newNode, int a_level)
 {
-  ASSERT(a_rect && a_node && a_newNode);
+  ASSERT(a_node && a_newNode);
   ASSERT(a_level >= 0 && a_level <= a_node->m_level);
 
   // recurse until we reach the correct level for the new record. data records
@@ -896,16 +898,16 @@ bool RTREE_QUAL::InsertRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node,
     Branch branch;
 
     // find the optimal branch for this record
-    int index = PickBranch(a_rect, a_node);
+    int index = PickBranch(&a_branch.m_rect, a_node);
 
     // recursively insert this record into the picked branch
-    bool childWasSplit = InsertRectRec(a_rect, a_id, a_node->m_branch[index].m_child, &otherNode, a_level);
+    bool childWasSplit = InsertRectRec(a_branch, a_node->m_branch[index].m_child, &otherNode, a_level);
 
     if (!childWasSplit)
     {
       // Child was not split. Merge the bounding box of the new record with the
       // existing bounding box
-      a_node->m_branch[index].m_rect = CombineRect(a_rect, &(a_node->m_branch[index].m_rect));
+      a_node->m_branch[index].m_rect = CombineRect(&a_branch.m_rect, &(a_node->m_branch[index].m_rect));
       return false;
     }
     else
@@ -924,19 +926,8 @@ bool RTREE_QUAL::InsertRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node,
   }
   else if(a_node->m_level == a_level)
   {
-    // We have reached level for insertion
-    Branch branch;
-    branch.m_rect = *a_rect;
-    branch.m_data = a_id;
-
-#ifdef _DEBUG
-    if ( 0 == a_level ) {
-      branch.m_child = NULL;
-    }
-#endif
-
-    // Add rect, split if necessary
-    return AddBranch(&branch, a_node, a_newNode);
+    // We have reached level for insertion. Add rect, split if necessary
+    return AddBranch(&a_branch, a_node, a_newNode);
   }
   else
   {
@@ -955,20 +946,20 @@ bool RTREE_QUAL::InsertRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node,
 // InsertRect2 does the recursion.
 //
 RTREE_TEMPLATE
-bool RTREE_QUAL::InsertRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root, int a_level)
+bool RTREE_QUAL::InsertRect(const Branch& a_branch, Node** a_root, int a_level)
 {
-  ASSERT(a_rect && a_root);
+  ASSERT(a_root);
   ASSERT(a_level >= 0 && a_level <= (*a_root)->m_level);
 #ifdef _DEBUG
   for(int index=0; index < NUMDIMS; ++index)
   {
-    ASSERT(a_rect->m_min[index] <= a_rect->m_max[index]);
+    ASSERT(a_branch.m_rect.m_min[index] <= a_branch.m_rect.m_max[index]);
   }
 #endif //_DEBUG  
 
   Node* newNode;
 
-  if(InsertRectRec(a_rect, a_id, *a_root, &newNode, a_level))  // Root split
+  if(InsertRectRec(a_branch, *a_root, &newNode, a_level))  // Root split
   {
     // Grow tree taller and new root
     Node* newRoot = AllocNode();
@@ -1017,7 +1008,7 @@ typename RTREE_QUAL::Rect RTREE_QUAL::NodeCover(Node* a_node)
 // Returns 1 if node split, sets *new_node to address of new node.
 // Old node updated, becomes one of two.
 RTREE_TEMPLATE
-bool RTREE_QUAL::AddBranch(Branch* a_branch, Node* a_node, Node** a_newNode)
+bool RTREE_QUAL::AddBranch(const Branch* a_branch, Node* a_node, Node** a_newNode)
 {
   ASSERT(a_branch);
   ASSERT(a_node);
@@ -1060,7 +1051,7 @@ void RTREE_QUAL::DisconnectBranch(Node* a_node, int a_index)
 // In case of a tie, pick the one which was smaller before, to get
 // the best resolution when searching.
 RTREE_TEMPLATE
-int RTREE_QUAL::PickBranch(Rect* a_rect, Node* a_node)
+int RTREE_QUAL::PickBranch(const Rect* a_rect, Node* a_node)
 {
   ASSERT(a_rect && a_node);
   
@@ -1098,7 +1089,7 @@ int RTREE_QUAL::PickBranch(Rect* a_rect, Node* a_node)
 
 // Combine two rectangles into larger one containing both
 RTREE_TEMPLATE
-typename RTREE_QUAL::Rect RTREE_QUAL::CombineRect(Rect* a_rectA, Rect* a_rectB)
+typename RTREE_QUAL::Rect RTREE_QUAL::CombineRect(const Rect* a_rectA, const Rect* a_rectB)
 {
   ASSERT(a_rectA && a_rectB);
 
@@ -1120,7 +1111,7 @@ typename RTREE_QUAL::Rect RTREE_QUAL::CombineRect(Rect* a_rectA, Rect* a_rectB)
 // Old node is one of the new ones, and one really new one is created.
 // Tries more than one method for choosing a partition, uses best result.
 RTREE_TEMPLATE
-void RTREE_QUAL::SplitNode(Node* a_node, Branch* a_branch, Node** a_newNode)
+void RTREE_QUAL::SplitNode(Node* a_node, const Branch* a_branch, Node** a_newNode)
 {
   ASSERT(a_node);
   ASSERT(a_branch);
@@ -1213,7 +1204,7 @@ ELEMTYPEREAL RTREE_QUAL::CalcRectVolume(Rect* a_rect)
 
 // Load branch buffer with branches from full node plus the extra branch.
 RTREE_TEMPLATE
-void RTREE_QUAL::GetBranches(Node* a_node, Branch* a_branch, PartitionVars* a_parVars)
+void RTREE_QUAL::GetBranches(Node* a_node, const Branch* a_branch, PartitionVars* a_parVars)
 {
   ASSERT(a_node);
   ASSERT(a_branch);
@@ -1447,9 +1438,8 @@ bool RTREE_QUAL::RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root)
 
       for(int index = 0; index < tempNode->m_count; ++index)
       {
-        // TODO go over this code. Check if it does what it is supposed to.
-        InsertRect(&(tempNode->m_branch[index].m_rect),
-                   tempNode->m_branch[index].m_data,
+        // TODO go over this code. should I use (tempNode->m_level - 1)?
+        InsertRect(tempNode->m_branch[index],
                    a_root,
                    tempNode->m_level);
       }
