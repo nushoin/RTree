@@ -18,13 +18,21 @@ AUTHORS
 LICENSE
 
     Original code was taken from http://www.superliminal.com/sources/sources.htm 
-    and is stored as git revision 0. This revision is entirely free for all uses. Enjoy!
+    and is stored as git revision 0. This revision is entirely free for all
+    uses. Enjoy!
 
-    Due to restrictions on public domain in certain countries, code
-    contributed by Yariv Barkan is released under either the BSD, MIT
-    or the GPL - you may choose whichever that suits you best. The
-    idea is to keep it as public domain as possible while not "public
-    domain" technically.
+    Due to restrictions on public domain in certain jurisdictions, code
+    contributed by Yariv Barkan is released in these jurisdictions under the
+    BSD, MIT or the GPL - you may choose one or more, whichever that suits you
+    best. 
+    
+    In jurisdictions where public domain property is recognized, the user of
+    this software may choose to accept it either 1) as public domain, 2) under
+    the conditions of the BSD, MIT or GPL or 3) any combination of public
+    domain and one or more of these licenses.
+
+    Thanks [Baptiste Lepilleur](http://jsoncpp.sourceforge.net/LICENSE) for the
+    licensing idea.
 
 FILES
 
@@ -42,7 +50,8 @@ RECENT CHANGE LOG
 
 02 Sep 2011
 
-- Modified the container to support more data types. The code it now generally compatible with the STL and Boost C++ libraries.
+- Modified the container to support more data types. The code it now generally
+  compatible with the STL and Boost C++ libraries.
 
 05 Jan 2010
 
