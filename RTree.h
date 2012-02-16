@@ -1582,7 +1582,7 @@ bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, t_resultC
       if(Overlap(a_rect, &a_node->m_branch[index].m_rect))
       {
         DATATYPE& id = a_node->m_branch[index].m_data;
-		  ++a_foundCount;
+        ++a_foundCount;
 
         // NOTE: There are different ways to return results.  Here's where to modify
         if(a_resultCallback)
