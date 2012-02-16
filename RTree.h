@@ -895,7 +895,6 @@ bool RTREE_QUAL::InsertRectRec(const Branch& a_branch, Node* a_node, Node** a_ne
   {
     // Still above level for insertion, go down tree recursively
     Node* otherNode;
-    Branch branch;
 
     // find the optimal branch for this record
     int index = PickBranch(&a_branch.m_rect, a_node);
@@ -1583,11 +1582,11 @@ bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, t_resultC
       if(Overlap(a_rect, &a_node->m_branch[index].m_rect))
       {
         DATATYPE& id = a_node->m_branch[index].m_data;
-        
+		  ++a_foundCount;
+
         // NOTE: There are different ways to return results.  Here's where to modify
-        if(&a_resultCallback)
+        if(a_resultCallback)
         {
-          ++a_foundCount;
           if(!a_resultCallback(id, a_context))
           {
             return false; // Don't continue searching
