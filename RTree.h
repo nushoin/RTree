@@ -289,7 +289,7 @@ protected:
   {
     Rect m_rect;                                  ///< Bounds
     Node* m_child;                                ///< Child node
-    DATATYPE m_data;                              ///< Data Id or Ptr
+    DATATYPE m_data;                              ///< Data Id
   };
 
   /// Node for each branch level
@@ -451,11 +451,6 @@ RTREE_QUAL::RTree()
 {
   ASSERT(MAXNODES > MINNODES);
   ASSERT(MINNODES > 0);
-
-
-  // We only support machine word size simple data type eg. integer index or object pointer.
-  // Since we are storing as union with non data branch
-  ASSERT(sizeof(DATATYPE) == sizeof(void*) || sizeof(DATATYPE) == sizeof(int));
 
   // Precomputed volumes of the unit spheres for the first few dimensions
   const float UNIT_SPHERE_VOLUMES[] = {
