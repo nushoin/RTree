@@ -1522,7 +1522,7 @@ bool RTREE_QUAL::Overlap(Rect* a_rectA, Rect* a_rectB)
 
   for(int index=0; index < NUMDIMS; ++index)
   {
-    if (a_rectA->m_min[index] > a_rectB->m_max[index] ||
+    if (a_rectA->m_min[index] > a_rectB->m_max[index] &&
         a_rectB->m_min[index] > a_rectA->m_max[index])
     {
       return false;
