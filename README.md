@@ -14,6 +14,7 @@ AUTHORS
 - 1995 Sphere volume fix for degeneracy problem submitted by Paul Brook
 - 2004 Templated C++ port by Greg Douglas
 - 2011 Modified the container to support more data types, by Yariv Barkan
+- 2017 Modified Search to take C++11 function to allow lambdas and added const qualifier, by Gero Mueller
 
 LICENSE
 
