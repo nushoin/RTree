@@ -96,11 +96,11 @@ int main()
 
   // Iterator test
   itIndex = 0;
-  for (tree.GetFirst(it);
-       !tree.IsNull(it);
-       tree.GetNext(it) )
+  for (copy.GetFirst(it);
+       !copy.IsNull(it);
+       copy.GetNext(it) )
   {
-    int value = tree.GetAt(it);
+    int value = copy.GetAt(it);
 
     int boundsMin[2] = {0,0};
     int boundsMax[2] = {0,0};
