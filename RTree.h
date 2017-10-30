@@ -72,6 +72,7 @@ public:
 public:
 
   RTree();
+  RTree(const RTree& other);
   virtual ~RTree();
   
   /// Insert entry
@@ -362,7 +363,8 @@ protected:
 
   bool SaveRec(Node* a_node, RTFileStream& a_stream);
   bool LoadRec(Node* a_node, RTFileStream& a_stream);
-  
+  void CopyRec(Node* current, Node* other);
+
   Node* m_root;                                    ///< Root of tree
   ELEMTYPEREAL m_unitSphereVolume;                 ///< Unit sphere constant for required number of dimensions
 };
@@ -466,6 +468,13 @@ RTREE_QUAL::RTree()
   m_root = AllocNode();
   m_root->m_level = 0;
   m_unitSphereVolume = (ELEMTYPEREAL)UNIT_SPHERE_VOLUMES[NUMDIMS];
+}
+
+
+RTREE_TEMPLATE
+RTREE_QUAL::RTree(const RTree& other) : RTree()
+{
+	CopyRec(m_root, other.m_root);
 }
 
 
@@ -678,6 +687,52 @@ bool RTREE_QUAL::LoadRec(Node* a_node, RTFileStream& a_stream)
   }
 
   return true; // Should do more error checking on I/O operations
+}
+
+
+RTREE_TEMPLATE
+void RTREE_QUAL::CopyRec(Node* current, Node* other)
+{
+  current->m_level = other->m_level;
+  current->m_count = other->m_count;
+
+  if(current->IsInternalNode())  // not a leaf node
+  {
+    for(int index = 0; index < current->m_count; ++index)
+    {
+      Branch* currentBranch = &current->m_branch[index];
+      Branch* otherBranch = &other->m_branch[index];
+
+      std::copy(otherBranch->m_rect.m_min,
+                otherBranch->m_rect.m_min + NUMDIMS,
+                currentBranch->m_rect.m_min);
+
+      std::copy(otherBranch->m_rect.m_max,
+                otherBranch->m_rect.m_max + NUMDIMS,
+                currentBranch->m_rect.m_max);
+
+      currentBranch->m_child = AllocNode();
+      CopyRec(currentBranch->m_child, otherBranch->m_child);
+    }
+  }
+  else // A leaf node
+  {
+    for(int index = 0; index < current->m_count; ++index)
+    {
+      Branch* currentBranch = &current->m_branch[index];
+      Branch* otherBranch = &other->m_branch[index];
+
+      std::copy(otherBranch->m_rect.m_min,
+                otherBranch->m_rect.m_min + NUMDIMS,
+                currentBranch->m_rect.m_min);
+
+      std::copy(otherBranch->m_rect.m_max,
+                otherBranch->m_rect.m_max + NUMDIMS,
+                currentBranch->m_rect.m_max);
+
+      currentBranch->m_data = otherBranch->m_data;
+    }
+  }
 }
 
 

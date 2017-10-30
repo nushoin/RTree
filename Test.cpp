@@ -91,6 +91,33 @@ int main()
     cout << "it[" << itIndex++ << "] " << value << "\n";
   }
 
+  // test copy constructor
+  MyTree copy = tree;
+
+  // Iterator test
+  itIndex = 0;
+  for (tree.GetFirst(it);
+       !tree.IsNull(it);
+       tree.GetNext(it) )
+  {
+    int value = tree.GetAt(it);
+
+    int boundsMin[2] = {0,0};
+    int boundsMax[2] = {0,0};
+    it.GetBounds(boundsMin, boundsMax);
+    cout << "it[" << itIndex++ << "] " << value << " = (" << boundsMin[0] << "," << boundsMin[1] << "," << boundsMax[0] << "," << boundsMax[1] << ")\n";
+  }
+
+  // Iterator test, alternate syntax
+  itIndex = 0;
+  copy.GetFirst(it);
+  while( !it.IsNull() )
+  {
+    int value = *it;
+    ++it;
+    cout << "it[" << itIndex++ << "] " << value << "\n";
+  }
+
   return 0;
 
   // Output:
@@ -99,6 +126,14 @@ int main()
   // Hit data rect 1
   // Hit data rect 2
   // Search resulted in 2 hits
+  // it[0] 0 = (0,0,2,2)
+  // it[1] 1 = (5,5,7,7)
+  // it[2] 2 = (8,5,9,6)
+  // it[3] 3 = (7,1,9,2)
+  // it[0] 0
+  // it[1] 1
+  // it[2] 2
+  // it[3] 3
   // it[0] 0 = (0,0,2,2)
   // it[1] 1 = (5,5,7,7)
   // it[2] 2 = (8,5,9,6)
