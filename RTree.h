@@ -68,8 +68,6 @@ public:
     MINNODES = TMINNODES,                         ///< Min elements in node
   };
 
-  typedef bool (*t_resultCallback)(DATATYPE, void*);
-
 public:
 
   RTree();
@@ -1635,7 +1633,7 @@ bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::func
         DATATYPE& id = a_node->m_branch[index].m_data;
         ++a_foundCount;
 
-          if(!callback(id))
+          if(callback && !callback(id))
           {
             return false; // Don't continue searching
           }
