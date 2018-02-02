@@ -62,7 +62,7 @@ int main()
     tree.Insert(rects[i].min, rects[i].max, i); // Note, all values including zero are fine in this version
   }
 
-  nhits = tree.Search(search_rect.min, search_rect.max, MySearchCallback, NULL);
+  nhits = tree.Search(search_rect.min, search_rect.max, 0);
 
   cout << "Search resulted in " << nhits << " hits\n";
 
