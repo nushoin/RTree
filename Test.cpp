@@ -42,7 +42,7 @@ int nrects = sizeof(rects) / sizeof(rects[0]);
 Rect search_rect(6, 4, 10, 6); // search will find above rects that this one overlaps
 
 
-bool MySearchCallback(ValueType id, void* arg)
+bool MySearchCallback(ValueType id)
 {
   cout << "Hit data rect " << id << "\n";
   return true; // keep going
@@ -62,7 +62,7 @@ int main()
     tree.Insert(rects[i].min, rects[i].max, i); // Note, all values including zero are fine in this version
   }
 
-  nhits = tree.Search(search_rect.min, search_rect.max, MySearchCallback, NULL);
+  nhits = tree.Search(search_rect.min, search_rect.max, MySearchCallback);
 
   cout << "Search resulted in " << nhits << " hits\n";
 

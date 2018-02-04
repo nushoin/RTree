@@ -113,7 +113,7 @@ int SomeThing::s_outstandingAllocs = 0;
 
 
 /// A callback function to obtain query results in this implementation
-bool QueryResultCallback(SomeThing* a_data, void* a_context)
+bool QueryResultCallback(SomeThing* a_data)
 {
   printf("search found %d\n", a_data->m_creationCounter);
   
@@ -203,7 +203,7 @@ int main(int argc, char* argv[])
 
   Vec3 searchMin(0,0,0);
   Vec3 searchMax(FRAC_WORLDSIZE, FRAC_WORLDSIZE, FRAC_WORLDSIZE); 
-  tree.Search(searchMin.v, searchMax.v, &QueryResultCallback, NULL);
+  tree.Search(searchMin.v, searchMax.v, &QueryResultCallback);
 
   // NOTE: Even better than just dumping text, it would be nice to render the 
   // tree contents and search result for visualization.

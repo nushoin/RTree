@@ -32,7 +32,7 @@ struct Rect
 };
 
 
-bool MySearchCallback(ValueType id, void* arg)
+bool MySearchCallback(ValueType id)
 {
   cout << "Hit data rect " << id << "\n";
   return true; // keep going
@@ -74,7 +74,7 @@ int main( int argc, char* argv[] )
   }
 
   Rect search_rect(6, 4, 10, 6);
-  nhits = tree.Search(search_rect.min, search_rect.max, MySearchCallback, NULL);
+  nhits = tree.Search(search_rect.min, search_rect.max, MySearchCallback);
 
   cout << "Search resulted in " << nhits << " hits\n";
 
