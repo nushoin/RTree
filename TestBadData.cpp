@@ -65,7 +65,7 @@ int main( int argc, char* argv[] )
   typedef RTree<ValueType, CoordType, 2, float> MyTree;
   MyTree tree;
 
-  int i, nhits;
+  unsigned int i, nhits;
   cout << "number of rectangles is " << rectVector.size() << "\n";
 
   for(i=0; i<rectVector.size(); i++)

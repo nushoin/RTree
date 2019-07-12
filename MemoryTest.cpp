@@ -121,7 +121,7 @@ bool QueryResultCallback(SomeThing* a_data)
 }
 
 
-int main(int argc, char* argv[])
+int main(int /*argc*/, char** /*argv*/)
 {
   const int NUM_OBJECTS = 40; // Number of objects in test set, must be > FRAC_OBJECTS for this test
   const int FRAC_OBJECTS = 4;
