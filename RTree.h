@@ -392,7 +392,7 @@ public:
 
   bool Open(const char* a_fileName, const char* mode)
   {
-#if defined(__STDC_LIB_EXT1__) && __STDC_WANT_LIB_EXT1__ == 1
+#if defined(_WIN32) && defined(__STDC_WANT_SECURE_LIB__)
     return fopen_s(&m_file, a_fileName, mode) == 0;
 #else
     m_file = fopen(a_fileName, mode);
