@@ -8,20 +8,67 @@ The code it now generally compatible with the STL and Boost C++ libraries.
 
 ## Usage
 
+### Inserting
+
 ```cpp
 #include <RTree.h>
+typedef RTree<Foo*, double, 3> MyTree;
 
-// ...
-
-RTree<Foo*, double, 3> tree;
+MyTree tree;
 double min[3] = {0., 0., 0.};
 double max[3] = {1., 1., 1.};
 Foo* bar = new Foo();
 tree.Insert(min, max, bar);
 ```
 
-Provides search in and iteration over the tree. For examples see
-[Test.cpp](https://github.com/nushoin/RTree/blob/master/Test.cpp)
+### Searching
+
+```cpp
+bool MySearchCallback(Foo* value)
+{
+	// do something with `value`, then
+	// return `true` to keep going, return `false` to stop
+	return true;
+}
+
+// search inside [0,0,0] and [1,1,1], execute callback on each hit
+double min[3] = {0., 0., 0.};
+double max[3] = {1., 1., 1.};
+int nhits = tree.Search(min, max, MySearchCallback);
+```
+
+### Iterating
+
+```cpp
+MyTree::Iterator it;
+for(tree.GetFirst(it); !tree.IsNull(it); tree.GetNext(it))
+{
+	Foo* value = tree.GetAt(it);
+
+	double boundsMin[3] = {0., 0., 0.};
+	double boundsMax[3] = {0., 0., 0.};
+	// save bounds into boundsMin/Max
+	it.GetBounds(boundsMin, boundsMax);
+	cout << boundsMin[0] << "," << boundsMin[1] << "," << boundsMin[2] << ","
+		<< boundsMax[0] << "," << boundsMax[1] << "," << boundsMax[2] << ")\n";
+}
+```
+
+or
+
+```cpp
+MyTree::Iterator it;
+tree.GetFirst(it);
+while(!it.IsNull())
+{
+	Foo* value = *it;
+	++it;
+}
+```
+
+
+For working examples see
+[Test.cpp](https://github.com/nushoin/RTree/blob/master/Test.cpp).
 
 ## Testing
 
