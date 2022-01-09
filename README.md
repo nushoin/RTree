@@ -11,7 +11,7 @@ The code it now generally compatible with the STL and Boost C++ libraries.
 ### Inserting
 
 ```cpp
-#include <RTree.h>
+#include "RTree.h"
 typedef RTree<Foo*, double, 3> MyTree;
 
 MyTree tree;
