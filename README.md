@@ -67,6 +67,24 @@ while(!it.IsNull())
 ```
 
 
+Listing all boxes in the tree, including the parent boxes that were not inserted
+but form the RTree internally:
+
+```cpp
+auto list = tree.ListTree();
+int counter = 0;
+for (auto aabb : list) {
+  cout << "TreeList [" << counter++ << "]: "
+    << aabb.m_min[0] << ", "
+    << aabb.m_min[1] << ", "
+    << aabb.m_min[2] << "; "
+    << aabb.m_max[0] << ", "
+    << aabb.m_max[1] << ", "
+    << aabb.m_max[2] << endl;
+}
+```
+
+
 For working examples see
 [Test.cpp](https://github.com/nushoin/RTree/blob/master/Test.cpp).
 

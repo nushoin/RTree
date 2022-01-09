@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <vector>
 
 #define ASSERT assert // RTree uses ASSERT( condition )
 #ifndef Min
@@ -368,6 +369,10 @@ protected:
 
   Node* m_root;                                    ///< Root of tree
   ELEMTYPEREAL m_unitSphereVolume;                 ///< Unit sphere constant for required number of dimensions
+
+public:
+  // return all the AABBs that form the RTree
+  std::vector<Rect> ListTree() const;
 };
 
 
@@ -1644,6 +1649,43 @@ bool RTREE_QUAL::Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::func
   }
 
   return true; // Continue searching
+}
+
+
+RTREE_TEMPLATE
+std::vector<typename RTREE_QUAL::Rect> RTREE_QUAL::ListTree() const
+{
+  ASSERT(m_root);
+  ASSERT(m_root->m_level >= 0);
+
+  std::vector<Rect> treeList;
+
+  std::vector<Node*> toVisit;
+  toVisit.push_back(m_root);
+
+  while (!toVisit.empty()) {
+    Node* a_node = toVisit.back();
+    toVisit.pop_back();
+    if(a_node->IsInternalNode())
+    {
+      // This is an internal node in the tree
+      for(int index=0; index < a_node->m_count; ++index)
+      {
+        treeList.push_back(a_node->m_branch[index].m_rect);
+        toVisit.push_back(a_node->m_branch[index].m_child);
+      }
+    }
+    else
+    {
+      // This is a leaf node
+      for(int index=0; index < a_node->m_count; ++index)
+      {
+        treeList.push_back(a_node->m_branch[index].m_rect);
+      }
+    }
+  }
+
+  return treeList;
 }
 
 
