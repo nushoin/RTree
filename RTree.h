@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <functional>
 #include <vector>
+#include <queue>
 
 #define RTREE_ASSERT assert // RTree uses RTREE_ASSERT( condition )
 #ifdef Min
@@ -101,6 +102,14 @@ public:
   /// \param a_context User context to pass as parameter to a_resultCallback
   /// \return Returns the number of entries found
   int Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], std::function<bool (const DATATYPE&)> callback) const;
+
+  /// Find the nearest neighbors
+  /// \param a_min Min of search bounding rect
+  /// \param a_max Max of search bounding rect
+  /// \param a_resultCallback Callback function to return result.  The Callback takes both the resulting data point and the calculated square distance. Callback should return 'true' to continue searching
+  /// \return Returns the number of entries found
+  size_t NNSearch(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], std::function<bool(const DATATYPE&, ELEMTYPE)> callback) const;
+
 
   /// Remove all entries from tree
   void RemoveAll();
@@ -361,6 +370,7 @@ protected:
   ListNode* AllocListNode();
   void FreeListNode(ListNode* a_listNode);
   bool Overlap(Rect* a_rectA, Rect* a_rectB) const;
+  ELEMTYPE SquareDistance(Rect const& a_rectA, Rect const& a_rectB) const;
   void ReInsert(Node* a_node, ListNode** a_listNode);
   bool Search(Node* a_node, Rect* a_rect, int& a_foundCount, std::function<bool (const DATATYPE&)> callback) const;
   void RemoveAllRec(Node* a_node);
@@ -565,6 +575,87 @@ int RTREE_QUAL::Search(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDI
   Search(m_root, &rect, foundCount, callback);
 
   return foundCount;
+}
+
+RTREE_TEMPLATE
+size_t RTREE_QUAL::NNSearch(
+    const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS],
+    std::function<bool(const DATATYPE&, ELEMTYPE)> callback
+) const
+{
+    // Create a search rectangle
+    Rect rect;
+    for (int axis = 0; axis < NUMDIMS; ++axis)
+    {
+        rect.m_min[axis] = a_min[axis];
+        rect.m_max[axis] = a_max[axis];
+    }
+
+    // class to store branches in the priority queue
+    struct QueueItem
+    {
+        QueueItem(Branch* branch, ELEMTYPE distance) :
+            branch(branch),
+            distance(distance)
+        {}
+
+        // Sort in the queue with the minimum distance
+        // taking priority
+        bool operator<(QueueItem const& a) const
+        {
+            return this->distance > a.distance;
+        }
+
+        Branch* branch;
+        ELEMTYPE distance;
+    };
+
+    std::priority_queue<QueueItem> search_queue;
+
+    // All branches in the root node are inserted into the priority queue. 
+    for (auto i = 0; i < m_root->m_count; ++i)
+    {
+        auto d = this->SquareDistance(rect, m_root->m_branch[i].m_rect);
+        search_queue.emplace(m_root->m_branch + i, d);
+    }
+
+    size_t foundCount = 0;
+    bool stop = false;
+
+    // Until the queue is empty
+    while (!search_queue.empty())
+    {
+        // Process the top item in the queue
+        auto process = std::move(search_queue.top());
+        search_queue.pop();
+
+        if (process.branch->m_child)
+        {
+            // If the branch has children, add them all into the queue
+            Node* node = process.branch->m_child;
+            for (auto i = 0; i < node->m_count; ++i)
+            {
+                auto d = this->SquareDistance(rect, node->m_branch[i].m_rect);
+                search_queue.emplace(node->m_branch + i, d);
+            }
+        }
+        else
+        {
+            // If this is a leaf, then we have found a minimum distance
+            // Call the callback
+            ++foundCount;
+            if (!callback(process.branch->m_data, process.distance))
+            {
+                // If the user has flaged to stopped, then return
+                // the number found.
+                return foundCount;
+            }
+        }
+
+    }
+
+    // No more items to search
+    return foundCount;
 }
 
 
@@ -1602,6 +1693,22 @@ bool RTREE_QUAL::Overlap(Rect* a_rectA, Rect* a_rectB) const
   return true;
 }
 
+// Decide whether two rectangles overlap.
+RTREE_TEMPLATE
+ELEMTYPE RTREE_QUAL::SquareDistance(Rect const& a_rectA, Rect const& a_rectB) const
+{
+    ELEMTYPE dist{};
+
+    for (int index = 0; index < NUMDIMS; ++index)
+    {
+        auto diff1 = a_rectA.m_min[index] - a_rectB.m_max[index];
+        auto diff2 = a_rectA.m_max[index] - a_rectB.m_min[index];
+
+        dist += diff1 * diff2 < 0 ? 0 : std::min(diff1 * diff1, diff2 * diff2);
+
+    }
+    return dist;
+}
 
 // Add a node to the reinsertion list.  All its branches will later
 // be reinserted into the index structure.
