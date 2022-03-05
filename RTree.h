@@ -620,7 +620,6 @@ size_t RTREE_QUAL::NNSearch(
     }
 
     size_t foundCount = 0;
-    bool stop = false;
 
     // Until the queue is empty
     while (!search_queue.empty())
