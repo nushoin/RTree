@@ -1,3 +1,6 @@
 *.swp
 *.out
+.vs
 out/
+x64/
+*.user
