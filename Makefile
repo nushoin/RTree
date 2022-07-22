@@ -4,7 +4,7 @@ CXXFLAGS=-Wall -Wextra -Wpedantic -std=c++11
 
 all: build
 
-build: out out/Test out/TestBadData out/MemoryTest out/TestTreeList
+build: out out/Test out/TestBadData out/MemoryTest out/TestTreeList out/TestLargeData
 
 out:
 	mkdir -p out
@@ -21,11 +21,15 @@ out/MemoryTest: MemoryTest.cpp RTree.h
 out/TestTreeList: TestTreeList.cpp RTree.h
 	$(CXX) -o $@ ${CXXFLAGS} $<
 
+out/TestLargeData: TestLargeData.cpp RTree.h
+	$(CXX) -o $@ ${CXXFLAGS} $<
+
 test: build
 	./out/Test
 	./out/TestBadData baddata.txt
 	./out/MemoryTest
 	./out/TestTreeList
+	./out/TestLargeData
 
 clean:
 	rm -rf out
