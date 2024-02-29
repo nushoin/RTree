@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 #include "RTree.h"
 
 using namespace std;

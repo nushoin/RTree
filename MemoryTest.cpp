@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <limits>
 #include <memory.h>
 #ifdef WIN32
   #include <crtdbg.h>
