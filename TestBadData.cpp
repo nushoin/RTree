@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <limits>
 #include <string>
 #include <vector>
 #include "RTree.h"
