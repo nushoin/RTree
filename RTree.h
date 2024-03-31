@@ -1304,6 +1304,7 @@ void RTREE_QUAL::ChoosePartition(PartitionVars* a_parVars, int a_minFill)
 {
   RTREE_ASSERT(a_parVars);
 
+  bool firstTime;
   ELEMTYPEREAL biggestDiff;
   int group, chosen = 0, betterGroup = 0;
 
@@ -1314,7 +1315,7 @@ void RTREE_QUAL::ChoosePartition(PartitionVars* a_parVars, int a_minFill)
        && (a_parVars->m_count[0] < (a_parVars->m_total - a_parVars->m_minFill))
        && (a_parVars->m_count[1] < (a_parVars->m_total - a_parVars->m_minFill)))
   {
-    biggestDiff = (ELEMTYPEREAL) -1;
+    firstTime = true;
     for(int index=0; index<a_parVars->m_total; ++index)
     {
       if(PartitionVars::NOT_TAKEN == a_parVars->m_partition[index])
@@ -1335,8 +1336,9 @@ void RTREE_QUAL::ChoosePartition(PartitionVars* a_parVars, int a_minFill)
           diff = -diff;
         }
 
-        if(diff > biggestDiff)
+        if(firstTime || diff > biggestDiff)
         {
+          firstTime = false;
           biggestDiff = diff;
           chosen = index;
           betterGroup = group;
@@ -1348,6 +1350,7 @@ void RTREE_QUAL::ChoosePartition(PartitionVars* a_parVars, int a_minFill)
         }
       }
     }
+    assert(!firstTime);
     Classify(chosen, betterGroup, a_parVars);
   }
 
@@ -1419,6 +1422,7 @@ void RTREE_QUAL::InitParVars(PartitionVars* a_parVars, int a_maxRects, int a_min
 RTREE_TEMPLATE
 void RTREE_QUAL::PickSeeds(PartitionVars* a_parVars)
 {
+  bool firstTime;
   int seed0 = 0, seed1 = 0;
   ELEMTYPEREAL worst, waste;
   ELEMTYPEREAL area[MAXNODES+1];
@@ -1428,21 +1432,23 @@ void RTREE_QUAL::PickSeeds(PartitionVars* a_parVars)
     area[index] = CalcRectVolume(&a_parVars->m_branchBuf[index].m_rect);
   }
 
-  worst = -a_parVars->m_coverSplitArea - 1;
+  firstTime = true;
   for(int indexA=0; indexA < a_parVars->m_total-1; ++indexA)
   {
     for(int indexB = indexA+1; indexB < a_parVars->m_total; ++indexB)
     {
       Rect oneRect = CombineRect(&a_parVars->m_branchBuf[indexA].m_rect, &a_parVars->m_branchBuf[indexB].m_rect);
       waste = CalcRectVolume(&oneRect) - area[indexA] - area[indexB];
-      if(waste > worst)
+      if(firstTime || waste > worst)
       {
+        firstTime = false;
         worst = waste;
         seed0 = indexA;
         seed1 = indexB;
       }
     }
   }
+  assert(!firstTime);
 
   Classify(seed0, 0, a_parVars);
   Classify(seed1, 1, a_parVars);
