@@ -1350,7 +1350,7 @@ void RTREE_QUAL::ChoosePartition(PartitionVars* a_parVars, int a_minFill)
         }
       }
     }
-    assert(!firstTime);
+    RTREE_ASSERT(!firstTime);
     Classify(chosen, betterGroup, a_parVars);
   }
 
@@ -1448,7 +1448,7 @@ void RTREE_QUAL::PickSeeds(PartitionVars* a_parVars)
       }
     }
   }
-  assert(!firstTime);
+  RTREE_ASSERT(!firstTime);
 
   Classify(seed0, 0, a_parVars);
   Classify(seed1, 1, a_parVars);
