@@ -14,11 +14,15 @@
 #include <vector>
 
 #define RTREE_ASSERT assert // RTree uses RTREE_ASSERT( condition )
-#ifndef Min
-  #define Min std::min
+#ifdef Min
+  #define RTREE_MIN Min
+#else
+  #define RTREE_MIN std::min
 #endif //Min
-#ifndef Max
-  #define Max std::max
+#ifdef Max
+  #define RTREE_MAX Max
+#else
+  #define RTREE_MAX std::max
 #endif //Max
 
 //
@@ -1152,8 +1156,8 @@ typename RTREE_QUAL::Rect RTREE_QUAL::CombineRect(const Rect* a_rectA, const Rec
 
   for(int index = 0; index < NUMDIMS; ++index)
   {
-    newRect.m_min[index] = Min(a_rectA->m_min[index], a_rectB->m_min[index]);
-    newRect.m_max[index] = Max(a_rectA->m_max[index], a_rectB->m_max[index]);
+    newRect.m_min[index] = RTREE_MIN(a_rectA->m_min[index], a_rectB->m_min[index]);
+    newRect.m_max[index] = RTREE_MAX(a_rectA->m_max[index], a_rectB->m_max[index]);
   }
 
   return newRect;
