@@ -43,7 +43,7 @@ static float RandFloat(float a_min, float a_max)
   
   float retValue = ( (float)rand() * ooMax * (a_max - a_min) + a_min);
 
-  ASSERT(retValue >= a_min && retValue < a_max); // Paranoid check
+  RTREE_ASSERT(retValue >= a_min && retValue < a_max); // Paranoid check
 
   return retValue;
 }
@@ -131,7 +131,7 @@ int main(int /*argc*/, char** /*argv*/)
   // typedef the RTree useage just for conveniance with iteration
   typedef RTree<SomeThing*, float, 3> SomeThingTree;
 
-  ASSERT( NUM_OBJECTS > FRAC_OBJECTS );
+  RTREE_ASSERT( NUM_OBJECTS > FRAC_OBJECTS );
 
   int index; // general purpose counter, declared here because MSVC 6 is not ansi compliant with 'for' loops.
   SomeThing* thingArray[NUM_OBJECTS * 2]; // Store objects in another container to test with, sized larger than we need
