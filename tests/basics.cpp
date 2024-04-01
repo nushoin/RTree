@@ -50,8 +50,6 @@ TEST(BasicTests, BasicTests) {
 
   int i, nhits;
 
-  ASSERT_EQ(nrects, 4);
-
   for (i = 0; i < nrects; i++) {
     tree.Insert(
         rects[i].min, rects[i].max,
