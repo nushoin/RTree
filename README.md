@@ -8,6 +8,8 @@ The code it now generally compatible with the STL and Boost C++ libraries.
 
 ## Usage
 
+Include `RTree.h`. This library is header-only.
+
 ### Inserting
 
 ```cpp
@@ -86,12 +88,30 @@ for (auto aabb : list) {
 
 
 For working examples see
-[Test.cpp](https://github.com/nushoin/RTree/blob/master/Test.cpp).
+[Test.cpp](https://github.com/nushoin/RTree/blob/master/tests).
 
 ## Testing
 
-Run `make` to build and `make test` to run the tests. The RTree itself is
-a single header file and can be included without compiling.
+This uses CMake, which download GTest.
+
+```bash
+mkdir build
+cd build
+cmake ..
+make
+make test
+
+# or
+
+cmake -S . -B build
+cmake --build build
+cd build
+ctest
+```
+
+Or use the IDE of your choice (tested with VSCode) and run the tests.
+
+The RTree itself is a single header file and can be included without compiling.
 
 ## Authors
 
