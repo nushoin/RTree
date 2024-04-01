@@ -1,28 +1,14 @@
-//
-// TestLargeData.cpp
-//
+#include "../RTree.h"
+#include "util.hpp"
+#include <gmock/gmock.h>
+#include <gtest/gtest-matchers.h>
+#include <gtest/gtest.h>
 
-#include "RTree.h"
+using namespace ::testing;
 
-struct Rect
-{
-  Rect()  {}
+typedef RectTemplate<float> Rect;
 
-  Rect(float a_minX, float a_minY, float a_maxX, float a_maxY)
-  {
-    min[0] = a_minX;
-    min[1] = a_minY;
-
-    max[0] = a_maxX;
-    max[1] = a_maxY;
-  }
-
-
-  float min[2];
-  float max[2];
-};
-
-struct Rect rects1[] =
+Rect rects1[] =
 {
   Rect(-165504234584830402149438989055033344.0f,0,0,0),
   Rect(0,0,0,0),
@@ -35,7 +21,7 @@ struct Rect rects1[] =
   Rect(-169908473233881734291078144928254001152.0f,0,0,-148873525386705775939391178777772949504.0f),
 };
 
-struct Rect rects2[] =
+Rect rects2[] =
 {
   Rect(-0.000487f,311158685411645789022377876652032.0f,0,0),
   Rect(-151115727451828646838272.0f,0,0,0),
@@ -48,8 +34,7 @@ struct Rect rects2[] =
   Rect(-0.453835f,303590248839277909200780151226368.0f,12.07855f,0),
 };
 
-int main()
-{
+TEST(LargeData, LargeData) {
   RTree<int, float, 2> tree;
 
   int data = 0;
@@ -60,5 +45,5 @@ int main()
     tree.Insert(rect.min, rect.max, data++);
   }
 
-  return 0;
+  SUCCEED();
 }

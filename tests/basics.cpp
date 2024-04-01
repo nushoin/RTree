@@ -49,9 +49,9 @@ TEST(BasicTests, BasicTests) {
   ASSERT_EQ(nhits, 2);
 
   std::vector<Rect> collectedRects = std::vector<Rect>();
+  std::vector<ValueType> collectedValues = std::vector<ValueType>();
 
   // Iterator test
-  int itIndex = 0;
   MyTree::Iterator it;
   for (tree.GetFirst(it); !tree.IsNull(it); tree.GetNext(it)) {
     int value = tree.GetAt(it);
@@ -61,14 +61,15 @@ TEST(BasicTests, BasicTests) {
     it.GetBounds(boundsMin, boundsMax);
     collectedRects.push_back(
         Rect(boundsMin[0], boundsMin[1], boundsMax[0], boundsMax[1]));
+    collectedValues.push_back(value);
   }
 
   EXPECT_THAT(rects, UnorderedElementsAreArray(collectedRects));
+  EXPECT_THAT(values, UnorderedElementsAreArray(collectedValues));
+  collectedValues.clear();
 
-  std::vector<ValueType> collectedValues = std::vector<ValueType>();
 
   // Iterator test, alternate syntax
-  itIndex = 0;
   tree.GetFirst(it);
   while (!it.IsNull()) {
     int value = *it;
@@ -82,9 +83,9 @@ TEST(BasicTests, BasicTests) {
   MyTree copy = tree;
 
   collectedRects.clear();
+  collectedValues.clear();
 
   // Iterator test
-  itIndex = 0;
   for (copy.GetFirst(it); !copy.IsNull(it); copy.GetNext(it)) {
     int value = copy.GetAt(it);
 
@@ -93,14 +94,15 @@ TEST(BasicTests, BasicTests) {
     it.GetBounds(boundsMin, boundsMax);
     collectedRects.push_back(
         Rect(boundsMin[0], boundsMin[1], boundsMax[0], boundsMax[1]));
+    collectedValues.push_back(value);
   }
+  EXPECT_THAT(values, UnorderedElementsAreArray(collectedValues));
 
   EXPECT_THAT(rects, UnorderedElementsAreArray(collectedRects));
 
   collectedValues.clear();
 
   // Iterator test, alternate syntax
-  itIndex = 0;
   copy.GetFirst(it);
   while (!it.IsNull()) {
     int value = *it;

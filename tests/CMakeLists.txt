@@ -1,3 +1,5 @@
+set (CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -std=c++11")
+
 add_executable(
   basics
   basics.cpp
@@ -30,8 +32,30 @@ target_link_libraries(
   GTest::gmock_main
 )
 
+add_executable(
+  largeData
+  largeData.cpp
+)
+target_link_libraries(
+  largeData
+  GTest::gtest_main
+  GTest::gmock_main
+)
+
+add_executable(
+  treeList
+  treeList.cpp
+)
+target_link_libraries(
+  treeList
+  GTest::gtest_main
+  GTest::gmock_main
+)
+
 include(GoogleTest)
 gtest_discover_tests(basics)
 gtest_discover_tests(memory)
 gtest_discover_tests(badData)
+gtest_discover_tests(largeData)
+gtest_discover_tests(treeList)
 
