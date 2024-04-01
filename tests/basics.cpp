@@ -1,4 +1,5 @@
 #include "../RTree.h"
+#include "util.hpp"
 #include <gmock/gmock.h>
 #include <gtest/gtest-matchers.h>
 #include <gtest/gtest.h>
@@ -10,25 +11,7 @@ using namespace ::testing;
 
 typedef int ValueType;
 
-struct Rect {
-  Rect() {}
-
-  Rect(int a_minX, int a_minY, int a_maxX, int a_maxY) {
-    min[0] = a_minX;
-    min[1] = a_minY;
-
-    max[0] = a_maxX;
-    max[1] = a_maxY;
-  }
-
-  bool operator==(const Rect &o) const {
-    return min[0] == o.min[0] && min[1] == o.min[1] && max[0] == o.max[0] &&
-           max[1] == o.max[1];
-  }
-
-  int min[2];
-  int max[2];
-};
+typedef RectTemplate<int> Rect;
 
 const std::vector<Rect> rects = {
     Rect(0, 0, 2, 2), // xmin, ymin, xmax, ymax (for 2 dimensional RTree)
