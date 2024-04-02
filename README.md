@@ -88,7 +88,7 @@ for (auto aabb : list) {
 
 
 For working examples see
-[Test.cpp](https://github.com/nushoin/RTree/blob/master/tests).
+[the tests](https://github.com/nushoin/RTree/blob/master/tests).
 
 ## Testing
 
@@ -131,8 +131,8 @@ uses. Enjoy!
 Due to restrictions on public domain in certain jurisdictions, code
 contributed by Yariv Barkan is released in these jurisdictions under the
 BSD, MIT or the GPL - you may choose one or more, whichever that suits you
-best. 
-    
+best.
+
 In jurisdictions where public domain property is recognized, the user of
 this software may choose to accept it either 1) as public domain, 2) under
 the conditions of the BSD, MIT or GPL or 3) any combination of public
