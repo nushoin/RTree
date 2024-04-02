@@ -40,7 +40,7 @@ TEST(BadDataTest, BadData) {
 
   unsigned int nhits;
 
-  for (int i = 0; i < rects.size(); i++) {
+  for (unsigned int i = 0; i < rects.size(); i++) {
     tree.Insert(rects[i].min, rects[i].max, i);
     values.push_back(i);
   }
@@ -55,9 +55,9 @@ TEST(BadDataTest, BadData) {
   EXPECT_EQ(nhits, 0);
 
   std::vector<Rect> collectedRects = std::vector<Rect>();
+  std::vector<ValueType> collectedValues = std::vector<ValueType>();
 
   // Iterator test
-  int itIndex = 0;
   MyTree::Iterator it;
   for (tree.GetFirst(it); !tree.IsNull(it); tree.GetNext(it)) {
     int value = tree.GetAt(it);
@@ -67,13 +67,14 @@ TEST(BadDataTest, BadData) {
     it.GetBounds(boundsMin, boundsMax);
     collectedRects.push_back(
         Rect(boundsMin[0], boundsMin[1], boundsMax[0], boundsMax[1]));
+    collectedValues.push_back(value);
   }
 
   EXPECT_THAT(rects, UnorderedElementsAreArray(collectedRects));
+  EXPECT_THAT(values, UnorderedElementsAreArray(collectedValues));
+  collectedValues.clear();
 
   // Iterator test, alternate syntax
-  std::vector<ValueType> collectedValues = std::vector<ValueType>();
-
   tree.GetFirst(it);
   while (!it.IsNull()) {
     CoordType value = *it;

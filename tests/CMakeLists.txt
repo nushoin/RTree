@@ -1,4 +1,4 @@
-set (CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic -std=c++11")
+set (CMAKE_CXX_FLAGS "-Wall -Wextra -Wpedantic")
 
 add_executable(
   basics
