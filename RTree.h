@@ -88,7 +88,11 @@ public:
   /// \param a_dataId Positive Id of data.  Maybe zero, but negative numbers not allowed.
   void Insert(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], const DATATYPE& a_dataId);
 
-  /// Remove entry
+  /// Remove entry (traverse the whole tree and removes every occurrence)
+  /// \param a_dataId Positive Id of data.  Maybe zero, but negative numbers not allowed.
+  void Remove(const DATATYPE& a_dataId);
+
+  /// Remove entry (only if inside the given rect)
   /// \param a_min Min of bounding rect
   /// \param a_max Max of bounding rect
   /// \param a_dataId Positive Id of data.  Maybe zero, but negative numbers not allowed.
@@ -526,6 +530,13 @@ void RTREE_QUAL::Insert(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMD
   }
 
   InsertRect(branch, &m_root, 0);
+}
+
+
+RTREE_TEMPLATE
+void RTREE_QUAL::Remove(const DATATYPE& a_dataId)
+{
+  RemoveRect(NULL, a_dataId, &m_root);
 }
 
 
@@ -1578,7 +1589,7 @@ void RTREE_QUAL::Classify(int a_index, int a_group, PartitionVars* a_parVars)
 RTREE_TEMPLATE
 bool RTREE_QUAL::RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root)
 {
-  RTREE_ASSERT(a_rect && a_root);
+  RTREE_ASSERT(a_root);
   RTREE_ASSERT(*a_root);
 
   ListNode* reInsertList = NULL;
@@ -1632,14 +1643,14 @@ bool RTREE_QUAL::RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root)
 RTREE_TEMPLATE
 bool RTREE_QUAL::RemoveRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node, ListNode** a_listNode)
 {
-  RTREE_ASSERT(a_rect && a_node && a_listNode);
+  RTREE_ASSERT(a_node && a_listNode);
   RTREE_ASSERT(a_node->m_level >= 0);
 
   if(a_node->IsInternalNode())  // not a leaf node
   {
     for(int index = 0; index < a_node->m_count; ++index)
     {
-      if(Overlap(a_rect, &(a_node->m_branch[index].m_rect)))
+      if(a_rect == NULL || Overlap(a_rect, &(a_node->m_branch[index].m_rect)))
       {
         if(!RemoveRectRec(a_rect, a_id, a_node->m_branch[index].m_child, a_listNode))
         {

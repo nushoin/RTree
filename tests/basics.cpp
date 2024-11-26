@@ -112,3 +112,37 @@ TEST(BasicTests, BasicTests) {
 
   EXPECT_THAT(values, UnorderedElementsAreArray(collectedValues));
 }
+
+
+TEST(BasicTests, RemoveTests) {
+  typedef RTree<ValueType, int, 2, float> MyTree;
+  MyTree tree;
+
+  std::vector<ValueType> v;
+
+  for (size_t i = 0; i < 1000; i++) {
+    const Rect rect(i, i, i, i);
+    tree.Insert(rect.min, rect.max, i);
+    v.push_back(i);
+  }
+
+  for (size_t i = 0; i < v.size(); i++) {
+    tree.Remove(v.back());
+
+    std::vector<ValueType> collectedValues = std::vector<ValueType>();
+    MyTree::Iterator it;
+    tree.GetFirst(it);
+
+    while (!it.IsNull()) {
+      int value = *it;
+      ++it;
+      collectedValues.push_back(value);
+    }
+
+    v.pop_back();
+
+    ASSERT_EQ(v.size(), collectedValues.size());
+    EXPECT_THAT(v, UnorderedElementsAreArray(collectedValues));
+  }
+
+}
