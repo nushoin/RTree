@@ -97,13 +97,13 @@ This uses CMake, which download GTest.
 ```bash
 mkdir build
 cd build
-cmake ..
+cmake -DENABLE_TESTING=ON ..
 make
 make test
 
 # or
 
-cmake -S . -B build
+cmake -DENABLE_TESTING=ON -S . -B build
 cmake --build build
 cd build
 ctest
