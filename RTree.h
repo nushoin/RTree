@@ -114,6 +114,12 @@ public:
   /// \return Returns the number of entries found
   size_t NNSearch(const ELEMTYPE a_min[NUMDIMS], const ELEMTYPE a_max[NUMDIMS], std::function<bool(const DATATYPE&, ELEMTYPE)> callback) const;
 
+  /// Aggregate nodes hierarchically
+  /// \param convert a function to convert the data type to the aggregation type
+  /// \param combine a function to combine two aggregation types
+  /// \param progress a function to check if the aggregation should continue
+  template <typename T>
+  T Aggregate(std::function<T(const DATATYPE &a1)> convert, std::function<T(T &a1, T &a2)> combine, std::function<bool()> progress);
 
   /// Remove all entries from tree
   void RemoveAll();
@@ -380,6 +386,8 @@ protected:
   void RemoveAllRec(Node* a_node);
   void Reset();
   void CountRec(Node* a_node, int& a_count);
+  template <typename T>
+  T AggregateNode(Node *a_node, std::function<T(const DATATYPE &a1)> convert, std::function<T(T &a1, T &a2)> combine, std::function<bool()> progress, bool &canceled);
 
   bool SaveRec(Node* a_node, RTFileStream& a_stream);
   bool LoadRec(Node* a_node, RTFileStream& a_stream);
@@ -666,6 +674,45 @@ size_t RTREE_QUAL::NNSearch(
 
     // No more items to search
     return foundCount;
+}
+
+
+RTREE_TEMPLATE
+template <typename T>
+T RTREE_QUAL::Aggregate(std::function<T(const DATATYPE &a1)> convert, std::function<T(T &a1, T &a2)> combine, std::function<bool()> progress)
+{
+  bool canceled = false;
+  return AggregateNode(m_root, convert, combine, progress, canceled);
+}
+
+RTREE_TEMPLATE
+template <typename T>
+T RTREE_QUAL::AggregateNode(Node *a_node, std::function<T(const DATATYPE &a1)> convert, std::function<T(T &a1, T &a2)> combine, std::function<bool()> progress, bool &canceled)
+{
+  if (canceled)
+  {
+    return nullptr;
+  }
+  if (a_node->IsLeaf())
+  {
+    T result = nullptr;
+    for (int index = 0; index < a_node->m_count; ++index)
+    {
+      if (!progress())
+      {
+        canceled = true;
+        return nullptr;
+      }
+      result = combine(result, convert(a_node->m_branch[index].m_data));
+    }
+    return result;
+  }
+  T result = nullptr;
+  for (int index = 0; index < a_node->m_count; ++index)
+  {
+    result = combine(result, AggregateNode(a_node->m_branch[index].m_child, convert, combine, progress, canceled));
+  }
+  return result;
 }
 
 
