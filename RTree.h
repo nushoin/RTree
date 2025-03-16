@@ -491,7 +491,16 @@ RTREE_QUAL::RTree()
 
   m_root = AllocNode();
   m_root->m_level = 0;
-  m_unitSphereVolume = (ELEMTYPEREAL)UNIT_SPHERE_VOLUMES[NUMDIMS];
+
+  if (NUMDIMS < 21)
+  {
+    m_unitSphereVolume = (ELEMTYPEREAL)UNIT_SPHERE_VOLUMES[NUMDIMS];
+  } else {
+    // Stirling's approximation, applicable to high dimensions
+    // https://en.wikipedia.org/wiki/Volume_of_an_n-ball#Approximation_for_high_dimensions
+    m_unitSphereVolume = (ELEMTYPEREAL)(1.0 / std::sqrt(NUMDIMS * M_PI) *
+                                        std::pow(2 * M_PI * M_E / NUMDIMS, NUMDIMS / 2.0));
+  }
 }
 
 

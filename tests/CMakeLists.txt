@@ -62,6 +62,16 @@ target_link_libraries(
   GTest::gmock_main
 )
 
+add_executable(
+  highDim
+  highDim.cpp
+)
+target_link_libraries(
+  highDim
+  GTest::gtest_main
+  GTest::gmock_main
+)
+
 include(GoogleTest)
 gtest_discover_tests(basics)
 gtest_discover_tests(memory)
@@ -69,4 +79,5 @@ gtest_discover_tests(badData)
 gtest_discover_tests(largeData)
 gtest_discover_tests(treeList)
 gtest_discover_tests(nearestNeighbour)
+gtest_discover_tests(highDim)
 
