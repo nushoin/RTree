@@ -13,6 +13,7 @@
 #include <functional>
 #include <vector>
 #include <queue>
+#include <limits>
 
 #define RTREE_ASSERT assert // RTree uses RTREE_ASSERT( condition )
 #ifdef Min
